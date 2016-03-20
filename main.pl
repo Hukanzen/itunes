@@ -3,10 +3,17 @@
 use Data::Dumper;
 use XML::MyXML qw(xml_to_object);
 use Perl6::Slurp;
+use Encode;
 
 #=== variable ===#
-$string_vi="s/\Qfile://lcoalhost/G:/\E/\Q/home/Public/\E/g";
+$p_file_string=m/^file:/;
+#$p_string_vi_prev=m!file:\/\/localhost\/G:!;
+#$p_string_vi_next=m!\/home\/Public!;
+#$p_string_vi=s/$p_string_vi_prev/$p_string_vi_next/;
+$p_string_vi=s/^file:\/\/localhost\/G:/\/home\/Public/; # $string_visual
+#=== variable ===#
 
+#=== load iTunes Lbrary ===#
 $fname="iTunes Library.xml";
 print "LOAD FILE: $fname \n";
 
@@ -14,14 +21,37 @@ $xml=slurp $fname;
 
 $itunes_lib=xml_to_object($xml);
 
-foreach ($itunes_lib->path("dict/dict/key")){
-	foreach $string ($_->path("dict/string")){
-		$p_file_string="m/file:/";
+$f_array="array.txt";
+#=== load iTunes Lbrary ===#
+
+open(OUT,">".$f_array);
+
+$i=0;
+foreach($itunes_lib->path("dict/dict/key")){
+#	print $_->value."\n";
+	@music_key[$i]=$_->value;
+	$i++;
+}
+
+$i=0;
+foreach($itunes_lib->path("dict/dict/dict")){
+	@strings=$_->path("string");
+	foreach my $string(@strings){
 		if($string->value =~ $p_file_string){
-			last;	
+#			print $string->value."\n";
+			$path=$string->value;
+			$path=~$p_string_vi;
+			$path=encode("utf-8",$path);
+			@music_file[$i]=$path;
 		}
 	}
-	$string=~$string_vi;
-	print $_->value."->".$string."\n";
-	#@song[$_->value]=$;
+	$i++;
 }
+
+$i=0;
+foreach (@music_key){
+	print OUT @music_key[$i]." - ".@music_file[$i]."\n";
+	$i++;
+}
+
+close(OUT);
