@@ -57,12 +57,6 @@ foreach($itunes_lib->path("dict/dict/dict")){
 	$i++;
 }
 
-#$i=0;
-#foreach (@music_key){
-#	print OUT @music_key[$i]." - ".@music_file[$i]."\n";
-#	$i++;
-#}
-
 @playlist_dict=$itunes_lib->path("dict/array/dict");
 foreach my $a_pl_dict(@playlist_dict){
 	my @pl_dict=$a_pl_dict->path("string");
@@ -94,9 +88,13 @@ foreach my $a_trackID(@music_playlist){
 	for($j=0;@music_key;$j++){
 		if($a_trackID==@music_key[$j]){
 #			print OUT $a_trackID."-".@music_file[$j]."\n";
-			$s=sprintf("cp %s %s",@music_file[$j],$move_current);
+			$s=sprintf("cp \"%s\" \"%s\"",@music_file[$j],$move_current);
 			print OUT $s."\n";
-#			system($s);
+			$recode=0;
+#			$recode=system($s);
+#			if($recode!=0){
+#				exit;	
+#			}
 
 			last;
 		}
