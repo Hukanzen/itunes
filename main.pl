@@ -7,7 +7,8 @@ use Encode;
 use URI::Escape;
 
 #=== variable ===#
-$f_array="array.txt";
+$f_array="log.log";
+$f_error="error.log"
 #$fname="iTunes Library.xml";
 $fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
 
@@ -83,23 +84,29 @@ foreach my $a_pl_dict(@playlist_dict){
 	}
 }
 
+open(E_OUT,">".$e_array);
 $i=0;
 foreach my $a_trackID(@music_playlist){
 	for($j=0;@music_key;$j++){
 		if($a_trackID==@music_key[$j]){
 #			print OUT $a_trackID."-".@music_file[$j]."\n";
-			$s=sprintf("cp \"%s\" \"%s\"",@music_file[$j],$move_current);
+			$s=sprintf("cp \'%s\' \'%s\'",@music_file[$j],$move_current);
 			print OUT $s."\n";
-			$recode=0;
-#			$recode=system($s);
-#			if($recode!=0){
-#				exit;	
-#			}
+
+			$remsg=`$s`;
+
+			print E_OUT $remsg;
+			
+			#$recode=0;
+			#$recode=system($s);
+			#if($recode!=0){
+			#	exit $j;	
+			#}
 
 			last;
 		}
 	}
 }
-
+close(E_OUT);
 
 close(OUT);
