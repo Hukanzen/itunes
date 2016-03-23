@@ -7,23 +7,28 @@ use Encode;
 use URI::Escape;
 
 #=== variable ===#
+$f_array="array.txt";
+#$fname="iTunes Library.xml";
+$fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
+
+$move_current="/home/Public/myMusic/";
+
 $p_file_string=m/^file:/;
-#$p_string_vi_prev=m!file:\/\/localhost\/G:!;
-#$p_string_vi_next=m!\/home\/Public!;
-#$p_string_vi=s/$p_string_vi_prev/$p_string_vi_next/;
-$p_string_vi=s!file://localhost/G:!/home/Public!g; # $string_visual
+
+$p_string_vi_prev="file://localhost/G:";
+$p_string_vi_next="/home/Public";
+
+$get_playlist="like55";
 #=== variable ===#
 
 #=== load iTunes Lbrary ===#
-$fname="iTunes Library.xml";
 print "LOAD FILE: $fname \n";
 
 $xml=slurp $fname;
 
 $itunes_lib=xml_to_object($xml);
-
-$f_array="array.txt";
 #=== load iTunes Lbrary ===#
+
 
 open(OUT,">".$f_array);
 
@@ -40,22 +45,63 @@ foreach($itunes_lib->path("dict/dict/dict")){
 	$path="no file";
 	foreach my $string(@strings){
 		if($string->value =~ $p_file_string){
-#			print $string->value."\n";
 			$path=$string->value;
+
 			$path=encode("utf-8",$path);
 			$path=uri_unescape($path);
-#			$path=~$p_string_vi;
-			$path =~ s!^file://localhost!!;
-			@music_file[$i]=$path;
+			$path=~s/$p_string_vi_prev/$p_string_vi_next/g;
+
 		}
+		@music_file[$i]=$path;
 	}
 	$i++;
 }
 
-$i=0;
-foreach (@music_key){
-	print OUT @music_key[$i]." - ".@music_file[$i]."\n";
-	$i++;
+#$i=0;
+#foreach (@music_key){
+#	print OUT @music_key[$i]." - ".@music_file[$i]."\n";
+#	$i++;
+#}
+
+@playlist_dict=$itunes_lib->path("dict/array/dict");
+foreach my $a_pl_dict(@playlist_dict){
+	my @pl_dict=$a_pl_dict->path("string");
+	foreach(@pl_dict){
+			
+		 $srch_playlist_name=$_->value;
+	}
+
+
+	$srch_playlist_name=encode("utf-8",$srch_playlist_name);
+
+	if($srch_playlist_name =~ /$get_playlist/){
+	
+#		print OUT $srch_playlist_name."\n";
+		@trackID_dict=$a_pl_dict->path("array/dict");
+		$i=0;
+		foreach my $a_trackID_dict(@trackID_dict){
+			my $a_trackID=$a_trackID_dict->path("integer");
+			@music_playlist[$i]=$a_trackID->value;
+#			print OUT @music_playlist[$i]."\n";
+			$i++;
+		}
+		last;
+	}
 }
+
+$i=0;
+foreach my $a_trackID(@music_playlist){
+	for($j=0;@music_key;$j++){
+		if($a_trackID==@music_key[$j]){
+#			print OUT $a_trackID."-".@music_file[$j]."\n";
+			$s=sprintf("cp %s %s",@music_file[$j],$move_current);
+			print OUT $s."\n";
+#			system($s);
+
+			last;
+		}
+	}
+}
+
 
 close(OUT);
