@@ -7,8 +7,10 @@ use Encode;
 use URI::Escape;
 
 #=== variable ===#
+$s_goodbye=" >/dev/null 2>&1";
+
 $f_array="log.log";
-$f_error="error.log"
+$f_error="error.log";
 #$fname="iTunes Library.xml";
 $fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
 
@@ -21,6 +23,23 @@ $p_string_vi_next="/home/Public";
 
 $get_playlist="like55";
 #=== variable ===#
+
+#=== verify directory ===#
+$s="ls \'".$fname."\'".$s_goodbye;
+$recode=system($s);
+if($recode){
+	print "NOT FOUND $fname";
+	exit 1;
+}
+
+$s="ls \'".$move_current."\'".$s_goodbye;
+$recode=system($s);
+if($recode){
+	$s="mkdir \'".$move_current."\'";
+	system($s);
+}
+
+#=== verify directory ===#
 
 #=== load iTunes Lbrary ===#
 print "LOAD FILE: $fname \n";
@@ -84,24 +103,23 @@ foreach my $a_pl_dict(@playlist_dict){
 	}
 }
 
-open(E_OUT,">".$e_array);
+open(E_OUT,">".$f_error);
 $i=0;
 foreach my $a_trackID(@music_playlist){
 	for($j=0;@music_key;$j++){
 		if($a_trackID==@music_key[$j]){
 #			print OUT $a_trackID."-".@music_file[$j]."\n";
 			$s=sprintf("cp \'%s\' \'%s\'",@music_file[$j],$move_current);
+			$file_path=@music_file[$j];
+			$file_path=~s!^(.|\s)*\/!!;
+			print $file_path."\n";
 			print OUT $s."\n";
-
-			$remsg=`$s`;
-
-			print E_OUT $remsg;
 			
-			#$recode=0;
-			#$recode=system($s);
-			#if($recode!=0){
-			#	exit $j;	
-			#}
+			$recode=0;
+			$recode=system($s);
+			if($recode){
+				print E_OUT $recode." - ".$s."\n";
+			}
 
 			last;
 		}
