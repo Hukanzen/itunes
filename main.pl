@@ -109,7 +109,7 @@ foreach my $a_trackID(@music_playlist){
 	for($j=0;@music_key;$j++){
 		if($a_trackID==@music_key[$j]){
 #			print OUT $a_trackID."-".@music_file[$j]."\n";
-			$s=sprintf("cp \'%s\' \'%s\'",@music_file[$j],$move_current);
+			$s=sprintf("cp \"%s\" \"%s\"",@music_file[$j],$move_current);
 			$file_path=@music_file[$j];
 			$file_path=~s!^(.|\s)*\/!!;
 			print $file_path."\n";
