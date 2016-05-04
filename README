@@ -12,8 +12,15 @@
 
 iTunes Library.xml を読み取って，指定したプレイリストに登録している音楽，もしくは動画ファイルを指定したディレクトリへコピーする．
 
+1st,Load "iTunes Library.xml".
+2nd,Music or Movie move to designation directory in designation playlist .
+
+
 名前はまだ無い．
 
+Nothing name of this program.
+
+log 
 2015/03/03 プログラム書き始め
 2016/03/15 データを学校に忘れたので，自分の環境に書き直し．なお，Xml::Simple が入っていない模様
 2016/03/20 MyXMLを試してみた．なかなか良さそう．
@@ -23,3 +30,5 @@ iTunes Library.xml を読み取って，指定したプレイリストに登録�
 2016/03/23 できた． 名前はまだ無い．
 2016/03/24 名前考え中．
 2016/03/26 名前欄コーナーを作った.
+2016/04/08 xmlを読み込み，ファイル出力する部分だけのファイルを作ったが，あまり役に立たなさそう.
+2016/04/13 Procon
