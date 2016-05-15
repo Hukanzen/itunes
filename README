@@ -12,8 +12,7 @@
 
 iTunes Library.xml を読み取って，指定したプレイリストに登録している音楽，もしくは動画ファイルを指定したディレクトリへコピーする．
 
-1st,Load "iTunes Library.xml".
-2nd,Music or Movie move to designation directory in designation playlist .
+Load "iTunes Library.xml" and Music or Movie move to designation directory in designation playlist .
 
 
 名前はまだ無い．
