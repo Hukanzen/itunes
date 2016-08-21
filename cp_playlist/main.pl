@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+#use strict;
 use Data::Dumper;
 use XML::MyXML qw(xml_to_object);
 use Perl6::Slurp;
@@ -13,7 +14,8 @@ my $get_playlist="like55";
 
 #=== To Directory ===#
 my $work_DIR="/home/Public/myitunes/";
-my $f_array=$work_DIR."log.log";
+#my $f_array=$work_DIR."log.log";
+my $f_array="log.log";
 my $f_error=$work_DIR."error.log";
 my $fname="../iTunes Library.xml";
 #$fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
@@ -22,6 +24,7 @@ my $fname="../iTunes Library.xml";
 my $itunes_current="/home/Public/iTunes/";
 my $music_DIR=$work_DIR."myMusic/";
 my $video_DIR=$work_DIR."myVideo/";
+my $tmp_DIR  ="/tmp/";
 my $other_DIR=$work_DIR."myDocument/";
 
 #=== USER variable ===#
@@ -83,10 +86,10 @@ foreach my $a_trackID(@music_playlist){
 #			print @music_file[$j];
 			my $file=@music_file[$j];
 			my $recode=&exe_cp_cmd($file);
-			print OUT $recode;
+			print OUT $recode."\n";
 			
 			if($system_on){
-				#print E_OUT $recode." - ".$s."\n";
+#				print E_OUT $recode." - ".$s."\n";
 				system($recode);
 				print E_OUT $En.",".$recode.","."\n";
 				$En++;
@@ -114,6 +117,9 @@ sub sub_Key{
 }
 
 sub sub_File{
+	my $p_string_vi_prev="file://localhost/G:/iTunes/";
+	my $p_string_vi_next=$itunes_current;
+
 	my $i=0;
 	foreach($itunes_lib->path("dict/dict/dict")){
 		my @strings=$_->path("string");
@@ -136,9 +142,6 @@ sub sub_File{
 
 sub sub_Playlist{
 	my $p_file_string=m/^file:/;
-
-	my $p_string_vi_prev="file://localhost/G:/iTunes/";
-	my $p_string_vi_next=$itunes_current;
 
 	my @playlist_dict=$itunes_lib->path("dict/array/dict");
 	foreach my $a_pl_dict(@playlist_dict){
@@ -195,25 +198,43 @@ sub C_DIR{
 }
 
 sub exe_cp_cmd{
-	my @music_extension=("mp3","m4a","wav","aac");
+	my @music_extension=("mp3","wav","aac");
 	my @video_extension=("mp4","m4v");
 
 	my $file_name=shift(@_);
+	my $name=$file_name;
 	my $exe=$file_name;
+
+	$name=~s!^.*\/!!;
+	$name=~s!\..+!!;
 	$exe=~s!.*\.!!; #== kakuchoushi
 	#print $file_name."\n";
 	#print $exe."\n";
 
+	if($exe eq "m4a"){
+		my $s0=sprintf("cp \"%s\" \"%s\"",$file_name,$tmp_DIR);
+		my $s1=sprintf("ffmpeg -i \"%s\" -ab 320k \"%s\"",$tmp_DIR.$file_name,$tmp_DIR.$name."mp3");
+
+		if($system_on){
+			system($s0);
+			system($s1);
+		}
+
+		my $s=sprintf("cp \"%s\" \"%s\"",$tmp_DIR.$name."mp3",$music_DIR);
+		return $s;
+
+	}
+
 	foreach (@music_extension){
 		if($exe eq $_){
-			$s=sprintf("cp \"%s\" \"%s\"",$file_name,$music_DIR);
+			my $s=sprintf("cp \"%s\" \"%s\"",$file_name,$music_DIR);
 			return $s;
 		}
 	}
 
 	foreach (@video_extension){
 		if($exe eq $_){
-			$s=sprintf("cp \"%s\" \"%s\"",$file_name,$video_DIR);
+			my $s=sprintf("cp \"%s\" \"%s\"",$file_name,$video_DIR);
 			return $s;
 		}
 			
