@@ -7,9 +7,7 @@ use Encode;
 use URI::Escape;
 
 #=== USER variable ===#
-
 $get_playlist="like56";
-#$get_playlist="シンゴジラ";
 
 #=== To Directory ===#
 $work_DIR="/home/Public/myitunes/";
@@ -41,7 +39,8 @@ my $s_goodbye=" >/dev/null 2>&1";
 
 #=== SYSTEM variable ===#
 
-#=== verify directory ===#
+#=== main function ===#
+#= verify iTunes Xml file =#
 $s="ls \'".$fname."\'".$s_goodbye;
 if($check_on){
 	$recode=system($s);
@@ -51,20 +50,18 @@ if($recode){
 	exit 1;
 }
 
-#@s_DIR=($move_current,$music_DIR,$video_DIR,$other_DIR);
+#= verify directory =#
 &C_DIR();
 
-#=== verify directory ===#
-
-#=== load iTunes Lbrary ===#
+#= load iTunes Lbrary =#
 print "LOAD FILE: $fname \n";
 
 $xml=slurp $fname;
 
 $itunes_lib=xml_to_object($xml);
-#=== load iTunes Lbrary ===#
+#= load iTunes Lbrary =#
 
-#=== main function ===#
+
 #= get music ID =#
 my @music_key=&sub_Key();
 
@@ -82,15 +79,12 @@ my $En=0;
 foreach my $a_trackID(@music_playlist){
 	for(my $j=0;@music_key[$j];$j++){
 		if($a_trackID==@music_key[$j]){
-
-#			print @music_file[$j];
 			my $file=@music_file[$j];
 			my $recode=&exe_cp_cmd($file);
 			print OUT $recode."\n";
 			
 			if($system_on){
-				#print E_OUT $recode." - ".$s."\n";
-				if(!system($recode)){
+				if($recode==1){
 					print E_OUT $En.",".$recode.","."\n";
 					$En++;
 				}
@@ -111,7 +105,6 @@ close(OUT);
 sub sub_Key{
 	my $i=0;
 	foreach($itunes_lib->path("dict/dict/key")){
-	#	print $_->value."\n";
 		@music_key[$i]=$_->value;
 		$i++;
 	}
@@ -144,11 +137,9 @@ sub sub_File{
 
 sub sub_Playlist{
 	my $p_file_string=m/^file:/;
-
-	#my $p_string_vi_prev="file://localhost/G:/iTunes/";
 	my $p_string_vi_next=$itunes_current;
-
 	my @playlist_dict=$itunes_lib->path("dict/array/dict");
+
 	foreach my $a_pl_dict(@playlist_dict){
 		my @pl_dict=$a_pl_dict->path("string");
 		my $srch_playlist_name;
@@ -156,19 +147,15 @@ sub sub_Playlist{
 				
 			  $srch_playlist_name=$_->value;
 		}
-	
-	
-		$srch_playlist_name=encode("utf-8",$srch_playlist_name);
-	
-		if($srch_playlist_name =~ /$get_playlist/){
 		
-	#		print OUT $srch_playlist_name."\n";
+		$srch_playlist_name=encode("utf-8",$srch_playlist_name);
+
+		if($srch_playlist_name =~ /$get_playlist/){
 			my @trackID_dict=$a_pl_dict->path("array/dict");
-			$i=0;
+			my $i=0;
 			foreach my $a_trackID_dict(@trackID_dict){
 				my $a_trackID=$a_trackID_dict->path("integer");
 				@music_playlist[$i]=$a_trackID->value;
-	#			print OUT @music_playlist[$i]."\n";
 				$i++;
 			}
 			last;
@@ -210,9 +197,7 @@ sub exe_cp_cmd{
 
 	my $file_name=shift(@_);
 	my $exe=$file_name;
-	$exe=~s!.*\.!!; #== kakuchoushi
-	#print $file_name."\n";
-	#print $exe."\n";
+	$exe=~s!.*\.!!; #== get Kakucho-shi
 
 	foreach (@music_extension){
 		if($exe eq $_){
@@ -228,16 +213,14 @@ sub exe_cp_cmd{
 		}
 			
 	}
-	return "error";
+	return 1;
 
 }
 
 sub cnvrt{
 	$gen=`pwd`;
 	chdir($music_DIR);
-	
-	#system("mkdir ../m4a_file");
-	
+
 	@file=glob "*.m4a";
 	
 	foreach(@file){
@@ -256,14 +239,12 @@ sub cnvrt{
 	
 	chdir('..');
 	$dir_name="myMusic";
-	#$zip_name=$dir_name.".zip";
 	$zip_name=$get_playlist.".zip";
 
 	system("mv $zip_name $dst_dir");
 	system("mv $dir_name $get_playlist");
 	system("zip -r $zip_name $get_playlist");
 	system("mv $get_playlist $dst_dir");
-	#system("less $zip_name");
 
 	chdir $gen;
 }
