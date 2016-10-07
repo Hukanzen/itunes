@@ -8,23 +8,26 @@ use URI::Escape;
 
 #=== USER variable ===#
 
-$get_playlist="like55";
-#$get_playlist="Gochiusa";
+$get_playlist="like56";
+#$get_playlist="シンゴジラ";
 
 #=== To Directory ===#
 $work_DIR="/home/Public/myitunes/";
+$work_DIR_cname="myitunes/";
 $f_array=$work_DIR."log.log";
 $f_error=$work_DIR."error.log";
-$fname="iTunes Library.xml";
-#$fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
+#$fname="iTunes Library.xml";
+$fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
 
 #=== From Directory ===#
 $itunes_current="/home/Public/iTunes/";
-$music_DIR=$work_DIR."myMusic/";
-$video_DIR=$work_DIR."myVideo/";
-$other_DIR=$work_DIR."myDocument/";
+$music_DIR=$work_DIR."myMusic";
+$video_DIR=$work_DIR."myVideo";
+$other_DIR=$work_DIR."m4a_file";
 
 #=== USER variable ===#
+#$dst_dir="/home/Public/Trash";
+$dst_dir="/var/tmp/";
 
 #=== SYSTEM variable ===#
 my @music_key;
@@ -32,7 +35,7 @@ my @music_file;
 my @music_playlist;
 
 my $check_on=1;
-my $system_on=0;
+my $system_on=1;
 
 my $s_goodbye=" >/dev/null 2>&1";
 
@@ -61,15 +64,15 @@ $xml=slurp $fname;
 $itunes_lib=xml_to_object($xml);
 #=== load iTunes Lbrary ===#
 
+#=== main function ===#
+#= get music ID =#
 my @music_key=&sub_Key();
-#print join("\n",@music_key);
 
+#= get path of music file =#
 my @music_file=&sub_File();
-#print join("\n",@music_file);
 
+#= get music ID of Playlist =#
 my @music_playlist=&sub_Playlist();
-#print join("\n",@music_playlist);
-
 
 open(OUT,">".$f_array);
 open(E_OUT,">".$f_error);
@@ -83,13 +86,14 @@ foreach my $a_trackID(@music_playlist){
 #			print @music_file[$j];
 			my $file=@music_file[$j];
 			my $recode=&exe_cp_cmd($file);
-			print OUT $recode;
+			print OUT $recode."\n";
 			
 			if($system_on){
 				#print E_OUT $recode." - ".$s."\n";
-				system($recode);
-				print E_OUT $En.",".$recode.","."\n";
-				$En++;
+				if(!system($recode)){
+					print E_OUT $En.",".$recode.","."\n";
+					$En++;
+				}
 			}
 
 			last;
@@ -100,6 +104,8 @@ close(E_OUT);
 
 close(OUT);
 
+&cnvrt();
+#=== main function ===#
 
 #=== SUB Routine ===#
 sub sub_Key{
@@ -115,6 +121,8 @@ sub sub_Key{
 
 sub sub_File{
 	my $i=0;
+	my $p_string_vi_prev="file://localhost/G:/iTunes/";
+	my $p_string_vi_next=$itunes_current;
 	foreach($itunes_lib->path("dict/dict/dict")){
 		my @strings=$_->path("string");
 		my $path="no file";
@@ -137,7 +145,7 @@ sub sub_File{
 sub sub_Playlist{
 	my $p_file_string=m/^file:/;
 
-	my $p_string_vi_prev="file://localhost/G:/iTunes/";
+	#my $p_string_vi_prev="file://localhost/G:/iTunes/";
 	my $p_string_vi_next=$itunes_current;
 
 	my @playlist_dict=$itunes_lib->path("dict/array/dict");
@@ -172,6 +180,7 @@ sub sub_Playlist{
 
 sub C_DIR{
 	my @s_DIR=($work_DIR,$music_DIR,$video_DIR,$other_DIR);
+	system("rm -r ".$dst_dir.$work_DIR_cname);
 
 	foreach (@s_DIR){
 		my $crecode=1;
@@ -186,6 +195,7 @@ sub C_DIR{
 		if($crecode){
 			my $s_dir="mkdir \'".$_."\'";
 			if($system_on){
+				system("mv $_ $dst_dir");
 				system($s_dir);
 			}else{
 				print $s_dir."\n";
@@ -220,4 +230,40 @@ sub exe_cp_cmd{
 	}
 	return "error";
 
+}
+
+sub cnvrt{
+	$gen=`pwd`;
+	chdir($music_DIR);
+	
+	#system("mkdir ../m4a_file");
+	
+	@file=glob "*.m4a";
+	
+	foreach(@file){
+		my $name=$_;
+		$name=~s!^.*\/!!;
+		$name=~s!\..+!!;
+		print $name;
+		my $s1=sprintf("ffmpeg -y -i \"%s\" -ab 256k \"%s\">/dev/null 2>&1",$name.".m4a",$name.".mp3");
+		system($s1);
+	}
+	
+	foreach(@file){
+		my $s=sprintf("mv \"%s\" ../m4a_file/",$_);
+		system($s);
+	}
+	
+	chdir('..');
+	$dir_name="myMusic";
+	#$zip_name=$dir_name.".zip";
+	$zip_name=$get_playlist.".zip";
+
+	system("mv $zip_name $dst_dir");
+	system("mv $dir_name $get_playlist");
+	system("zip -r $zip_name $get_playlist");
+	system("mv $get_playlist $dst_dir");
+	#system("less $zip_name");
+
+	chdir $gen;
 }

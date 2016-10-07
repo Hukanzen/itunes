@@ -1,8 +1,0 @@
-<Playlist>
-66961
-
-print ($xml->{dict}->{array}->{dict}[0]->{key}[5]); #Name
-print ($xml->{dict}->{array}->{dict}[0]->{string}[1]); #Name - String
-
-print Dumper($xml->{dict}->{array}->{dict}[0]->{array}->{dict}->{"Track ID"}->{integer}); 17159
-print ($xml->{dict}->{array}->{dict}[0]->{array}->{dict}->{"Track ID"}->{integer});
