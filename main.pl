@@ -245,6 +245,7 @@ sub cnvrt{
 	system("mv $dir_name $get_playlist");
 	system("zip -r $zip_name $get_playlist");
 	system("mv $get_playlist $dst_dir");
+	#system("mv $get_playlist $dst_dir");
 
 	chdir $gen;
 }
