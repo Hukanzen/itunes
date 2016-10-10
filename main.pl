@@ -7,7 +7,13 @@ use Encode;
 use URI::Escape;
 
 #=== USER variable ===#
-$get_playlist="like56";
+$get_playlist="AngelBeats";
+#music 1
+#video 2
+$type=2;
+$zip=0;
+#on 1
+#off 0
 
 #=== To Directory ===#
 $work_DIR="/home/Public/myitunes/";
@@ -19,9 +25,13 @@ $fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
 
 #=== From Directory ===#
 $itunes_current="/home/Public/iTunes/";
-$music_DIR=$work_DIR."myMusic";
-$video_DIR=$work_DIR."myVideo";
-$other_DIR=$work_DIR."m4a_file";
+$myMusic="myMusic";
+$myVideo="myVideo";
+$other  ="m4a_file";
+
+$music_DIR=$work_DIR.$myMusic;
+$video_DIR=$work_DIR.$myVideo;
+$other_DIR=$work_DIR.$other;
 
 #=== USER variable ===#
 #$dst_dir="/home/Public/Trash";
@@ -87,6 +97,8 @@ foreach my $a_trackID(@music_playlist){
 				if($recode==1){
 					print E_OUT $En.",".$recode.","."\n";
 					$En++;
+				}else{
+					system($recode);
 				}
 			}
 
@@ -238,13 +250,20 @@ sub cnvrt{
 	}
 	
 	chdir('..');
-	$dir_name="myMusic";
+	if($type==1){
+		$dir_name=$myMusic;
+	}elsif($type==2){
+		$dir_name=$myVideo;
+	}
 	$zip_name=$get_playlist.".zip";
 
 	system("mv $zip_name $dst_dir");
 	system("mv $dir_name $get_playlist");
-	system("zip -r $zip_name $get_playlist");
-	system("mv $get_playlist $dst_dir");
+
+	if($zip){
+		system("zip -r $zip_name $get_playlist");
+		system("mv $get_playlist $dst_dir");
+	}
 	#system("mv $get_playlist $dst_dir");
 
 	chdir $gen;
