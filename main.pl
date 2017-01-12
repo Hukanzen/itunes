@@ -7,13 +7,16 @@ use Encode;
 use URI::Escape;
 
 #=== USER variable ===#
-$get_playlist="AngelBeats";
-#music 1
-#video 2
-$type=2;
+#$get_playlist="AngelBeats";
+$get_playlist="like56";
+
+$type=1;
+	#music 1
+	#video 2
+	
 $zip=0;
-#on 1
-#off 0
+	#on 1
+	#off 0
 
 #=== To Directory ===#
 $work_DIR="/home/Public/myitunes/";
@@ -25,8 +28,9 @@ $fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
 
 #=== From Directory ===#
 $itunes_current="/home/Public/iTunes/";
-$myMusic="myMusic";
-$myVideo="myVideo";
+#$myMusic="myMusic";
+$myMusic=$get_playlist;
+$myVideo=$get_playlist;
 $other  ="m4a_file";
 
 $music_DIR=$work_DIR.$myMusic;
@@ -94,12 +98,10 @@ foreach my $a_trackID(@music_playlist){
 			print OUT $recode."\n";
 			
 			if($system_on){
-				if($recode==1){
+				if(!system($recode)){
 					print E_OUT $En.",".$recode.","."\n";
 					$En++;
-				}else{
-					system($recode);
-				}
+				}			
 			}
 
 			last;
@@ -110,7 +112,7 @@ close(E_OUT);
 
 close(OUT);
 
-&cnvrt();
+#&cnvrt();
 #=== main function ===#
 
 #=== SUB Routine ===#
@@ -178,8 +180,9 @@ sub sub_Playlist{
 }
 
 sub C_DIR{
-	my @s_DIR=($work_DIR,$music_DIR,$video_DIR,$other_DIR);
-	system("rm -r ".$dst_dir.$work_DIR_cname);
+	#my @s_DIR=($work_DIR,$music_DIR,$video_DIR,$other_DIR);
+	my @s_DIR=($music_DIR,$video_DIR,$other_DIR);
+	#system("rm -r ".$dst_dir.$work_DIR_cname);
 
 	foreach (@s_DIR){
 		my $crecode=1;
@@ -240,7 +243,7 @@ sub cnvrt{
 		$name=~s!^.*\/!!;
 		$name=~s!\..+!!;
 		print $name;
-		my $s1=sprintf("ffmpeg -y -i \"%s\" -ab 256k \"%s\">/dev/null 2>&1",$name.".m4a",$name.".mp3");
+		my $s1=sprintf("ffmpeg -y -i \"%s\" -ab 256k \"%s\"",$name.".m4a",$name.".mp3");
 		system($s1);
 	}
 	
@@ -249,22 +252,22 @@ sub cnvrt{
 		system($s);
 	}
 	
-	chdir('..');
-	if($type==1){
-		$dir_name=$myMusic;
-	}elsif($type==2){
-		$dir_name=$myVideo;
-	}
-	$zip_name=$get_playlist.".zip";
-
-	system("mv $zip_name $dst_dir");
-	system("mv $dir_name $get_playlist");
-
-	if($zip){
-		system("zip -r $zip_name $get_playlist");
-		system("mv $get_playlist $dst_dir");
-	}
-	#system("mv $get_playlist $dst_dir");
-
+#	chdir('..');
+#	if($type==1){
+#		$dir_name=$myMusic;
+#	}elsif($type==2){
+#		$dir_name=$myVideo;
+#	}
+#	$zip_name=$get_playlist.".zip";
+#
+#	system("mv $zip_name $dst_dir");
+#	system("mv $dir_name $get_playlist");
+#
+#	if($zip){
+#		system("zip -r $zip_name $get_playlist");
+#		system("mv $get_playlist $dst_dir");
+#	}
+#	#system("mv $get_playlist $dst_dir");
+#
 	chdir $gen;
 }
