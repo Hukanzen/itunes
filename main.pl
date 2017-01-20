@@ -5,16 +5,33 @@ use XML::MyXML qw(xml_to_object);
 use Perl6::Slurp;
 use Encode;
 use URI::Escape;
+use POSIX 'strftime';
+
+#= load iTunes Lbrary =#
+my $fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
+print "LOAD FILE: $fname \n";
+
+$xml=slurp $fname;
+
+$itunes_lib=xml_to_object($xml);
+#= load iTunes Lbrary =#
 
 #=== USER variable ===#
-#$get_playlist="AngelBeats";
-$get_playlist="like56";
+my $get_p_number=0;
+LOOP:
+
+my @playlist_settei=("like01","like02","singing");
+
+if($get_p_numer==$p_settei_num){
+	exit(0);
+}
+$get_playlist=$playlist_settei[$get_p_number];
 
 $type=1;
 	#music 1
 	#video 2
 	
-$zip=0;
+$zip=1;
 	#on 1
 	#off 0
 
@@ -24,7 +41,6 @@ $work_DIR_cname="myitunes/";
 $f_array=$work_DIR."log.log";
 $f_error=$work_DIR."error.log";
 #$fname="iTunes Library.xml";
-$fname="/home/Public/iTunes/iTunes Media/iTunes Library.xml";
 
 #=== From Directory ===#
 $itunes_current="/home/Public/iTunes/";
@@ -67,15 +83,6 @@ if($recode){
 #= verify directory =#
 &C_DIR();
 
-#= load iTunes Lbrary =#
-print "LOAD FILE: $fname \n";
-
-$xml=slurp $fname;
-
-$itunes_lib=xml_to_object($xml);
-#= load iTunes Lbrary =#
-
-
 #= get music ID =#
 my @music_key=&sub_Key();
 
@@ -112,12 +119,16 @@ close(E_OUT);
 
 close(OUT);
 
-#&cnvrt();
+&cnvrt();
+
+$get_p_number++;
+goto LOOP;
 #=== main function ===#
 
 #=== SUB Routine ===#
 sub sub_Key{
 	my $i=0;
+	my @music_key;
 	foreach($itunes_lib->path("dict/dict/key")){
 		@music_key[$i]=$_->value;
 		$i++;
@@ -128,6 +139,7 @@ sub sub_Key{
 
 sub sub_File{
 	my $i=0;
+	my @music_file;
 	my $p_string_vi_prev="file://localhost/G:/iTunes/";
 	my $p_string_vi_next=$itunes_current;
 	foreach($itunes_lib->path("dict/dict/dict")){
@@ -150,6 +162,7 @@ sub sub_File{
 }
 
 sub sub_Playlist{
+	my @music_playlist;
 	my $p_file_string=m/^file:/;
 	my $p_string_vi_next=$itunes_current;
 	my @playlist_dict=$itunes_lib->path("dict/array/dict");
@@ -182,6 +195,9 @@ sub sub_Playlist{
 sub C_DIR{
 	#my @s_DIR=($work_DIR,$music_DIR,$video_DIR,$other_DIR);
 	my @s_DIR=($music_DIR,$video_DIR,$other_DIR);
+
+	my $now = strftime "%Y%m%d_%H%M%S", localtime;
+	#print $now, "\n";
 	#system("rm -r ".$dst_dir.$work_DIR_cname);
 
 	foreach (@s_DIR){
@@ -195,9 +211,9 @@ sub C_DIR{
 		}
 	
 		if($crecode){
-			my $s_dir="mkdir \'".$_."\'";
+			my $s_dir="mkdir -p \'".$_."\'";
 			if($system_on){
-				system("mv $_ $dst_dir");
+				system("mv $_ $dst_dir"."/".$_.$now);
 				system($s_dir);
 			}else{
 				print $s_dir."\n";
@@ -233,41 +249,42 @@ sub exe_cp_cmd{
 }
 
 sub cnvrt{
-	$gen=`pwd`;
-	chdir($music_DIR);
-
-	@file=glob "*.m4a";
-	
-	foreach(@file){
-		my $name=$_;
-		$name=~s!^.*\/!!;
-		$name=~s!\..+!!;
-		print $name;
-		my $s1=sprintf("ffmpeg -y -i \"%s\" -ab 256k \"%s\"",$name.".m4a",$name.".mp3");
-		system($s1);
-	}
-	
-	foreach(@file){
-		my $s=sprintf("mv \"%s\" ../m4a_file/",$_);
-		system($s);
-	}
-	
-#	chdir('..');
-#	if($type==1){
-#		$dir_name=$myMusic;
-#	}elsif($type==2){
-#		$dir_name=$myVideo;
+#	$gen=`pwd`;
+#	chdir($music_DIR);
+#
+#	@file=glob "*.m4a";
+#	
+#	foreach(@file){
+#		my $name=$_;
+#		$name=~s!^.*\/!!;
+#		$name=~s!\..+!!;
+#		print $name;
+#		my $s1=sprintf("ffmpeg -y -i \"%s\" -ab 256k \"%s\"",$name.".m4a",$name.".mp3");
+#		system($s1);
 #	}
-#	$zip_name=$get_playlist.".zip";
+#	
+#	foreach(@file){
+#		my $s=sprintf("mv \"%s\" ../m4a_file/",$_);
+#		system($s);
+#	}
+#	
+#	chdir('..');
+	my $dir_name;
+	if($type==1){
+		$dir_name=$music_DIR;
+	}elsif($type==2){
+		$dir_name=$video_DIR;
+	}
+	my $zip_name=$dir_name.".zip";
 #
 #	system("mv $zip_name $dst_dir");
 #	system("mv $dir_name $get_playlist");
 #
-#	if($zip){
-#		system("zip -r $zip_name $get_playlist");
-#		system("mv $get_playlist $dst_dir");
-#	}
+	if($zip){
+		system("zip -r $zip_name $dir_name");
+		#system("mv $dir_name $dst_dir");
+	}
 #	#system("mv $get_playlist $dst_dir");
 #
-	chdir $gen;
+#	chdir $gen;
 }
